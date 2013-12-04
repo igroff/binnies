@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+if [ -t 0 ]; then
+  echo "you need to pipe something into me"
+  exit 1
+fi
+cat /dev/fd/0 | xmllint -format -

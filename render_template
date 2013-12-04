@@ -1,0 +1,46 @@
+#! /usr/bin/env python
+import os
+import sys
+import json
+import argparse
+
+from jinja2 import Environment, ChoiceLoader, FileSystemLoader
+from jinja2.exceptions import TemplateNotFound
+
+def render_template():
+    ARG_PARSER = argparse.ArgumentParser()
+    ARG_PARSER.add_argument('template',
+            help='Name of a template file to load'
+    )
+    ARG_PARSER.add_argument(
+        '-j',
+        '--json',
+        type=open,
+        default=sys.stdin,
+        dest='json',
+        help='a file containing the json data to merge with the selected template'
+    )
+    ARG_PARSER.add_argument(
+        '-d',
+        '--template-dir',
+        default=os.environ.get('TEMPLATE_DIR', None),
+        dest='template_dir',
+        help='directory to load templates from'
+    )
+    args = ARG_PARSER.parse_args()
+    cwd = os.getcwd()
+    loader_list =[
+                FileSystemLoader(os.path.join(cwd, 'templates/')),    
+            ]
+    if args.template_dir:
+        loader_list.insert(0, FileSystemLoader(args.template_dir))
+    jinja_env = Environment( loader=ChoiceLoader(loader_list) )
+
+    try:
+        template = jinja_env.get_template(args.template)
+    except TemplateNotFound as e:
+        sys.stderr.write("Could find no template named: %s\n" % (args.template))
+        sys.exit(1)
+
+    for line in args.json:
+        sys.stdout.write(template.render(json.loads(line)))

@@ -1,0 +1,12 @@
+#! /usr/bin/env python
+import yaml
+import json
+import sys
+
+def date_handler(obj):
+        return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+
+if sys.stdin.isatty():
+    print(json.dumps(yaml.load(open(sys.argv[1])), indent=2, default=date_handler))
+else:
+    print(json.dumps(yaml.load(sys.stdin), indent=2, default=date_handler))

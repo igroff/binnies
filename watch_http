@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+${1:?You need to tell me what to watch}
+while true;
+do
+  RESP=`curl --head -s -w "X-Active-Pants=->%{http_code}" ${1} | grep 'X-Active-';`
+  RESP=`echo ${RESP} | sed -e s/X-Active-Pants=//g -e s/[[:space:]]//g`
+  echo "`date` ${RESP}";
+  sleep 1;
+done

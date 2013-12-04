@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -z "${ENVIRONMENT_SOURCED}" ]; then
+  source ${MY_DIR}/environment
+fi
+
+if [ -n '$@' ]; then
+  echo "$@" | nc -U ${MESSAGE_SOCKET}
+fi

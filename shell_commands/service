@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -z "${ENVIRONMENT_SOURCED}" ]; then
+  source ${MY_DIR}/environment
+fi
+
+if [ -e "${MESSAGE_SOCKET}" ]; then
+  rm -f "${MESSAGE_SOCKET}"
+fi
+
+nc -lkU "${MESSAGE_SOCKET}" | ${ROOT_DIR}/command_processor

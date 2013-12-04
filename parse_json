@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+if [ "${1}x" != "x" ]; then
+    python -c "import json; json.load(open(\"$1\"))"
+else
+    python -c "import json; import sys; json.load(sys.stdin);" 
+fi

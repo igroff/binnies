@@ -1,0 +1,35 @@
+#! /usr/bin/env bash
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -z "${ENVIRONMENT_SOURCED}" ]; then
+  source ${MY_DIR}/environment
+fi
+
+function run_command(){
+  COMMAND=$1
+  ARGS=$2
+  COMMAND_PATH="${COMMANDS_DIR}/${COMMAND}"
+  if [ ! -x "${COMMAND_PATH}" ]; then
+    error "no command named ${COMMAND} available" 
+  else
+    eval "${COMMAND_PATH} ${arguments}; growlnotify --message \"${COMMAND} Done\"" &
+  fi
+}
+
+log "starting command processor with commands rom ${COMMANDS_DIR}"
+
+while true
+do
+    read command arguments < /dev/stdin
+    case "$command" in
+      "quit")
+        break
+        ;;
+      "");;
+      *)
+        run_command $command "$arguments"
+        ;;
+    esac
+done
+
+echo "command processor exiting"
+

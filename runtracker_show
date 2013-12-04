@@ -1,0 +1,21 @@
+#! /usr/bin/env bash
+# vim: ft=sh
+
+###############################################################################
+### Usage:
+###   runtracker_show [command]
+###############################################################################
+
+COMMAND=$1
+if [ -z "${COMMAND}" ]; then
+  ls -larth ${OUTPUT_ROOT}
+else
+  case "${COMMAND}" in
+    "last" )
+      cat ${OUTPUT_ROOT}/$2/${LAST_RUN_LINK_NAME};
+      ;;
+    * )
+      ls -larth ${OUTPUT_ROOT}/$1
+      ;;
+  esac
+fi

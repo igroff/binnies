@@ -1,0 +1,55 @@
+#! /usr/bin/env bash
+# vi: ft=sh
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+# the file or command that we'll be executing
+RUN_THIS="$@"
+debug "RUN_THIS=${RUN_THIS}"
+
+# this is our 'default' output directory, named after the command we're gonna
+# run.  If it turns out that this command is not an executable file, we'll 
+# be changing it below
+OUTPUT_DIR=${OUTPUT_ROOT}/${RUN_THIS}
+
+# if we're not runnin a file, we'll create a temporary executable script to 
+# handle our command
+if [ ! -x "${RUN_THIS}" ] && [ ! -x "`which \"${RUN_THIS}\"`" ]; then
+  echo "#! /usr/bin/env bash" > ${OUTPUT_ROOT}/cmdline.sh
+  echo "${RUN_THIS}" >> ${OUTPUT_ROOT}/cmdline.sh
+  chmod +x ${OUTPUT_ROOT}/cmdline.sh
+  RUN_THIS=${OUTPUT_ROOT}/cmdline.sh
+  OUTPUT_DIR=${OUTPUT_ROOT}/cmdline
+fi
+
+OUTPUT_FILE=${OUTPUT_DIR}/${RUN_INDICATOR}
+LAST_RUN_LINK=${OUTPUT_DIR}/${LAST_RUN_LINK_NAME}
+
+# if we already have an output file, we'll just try again until we get a
+# good one.  God help us if this doesn't work after one try
+while [ -f "${OUTPUT_FILE}" ]
+do
+  warn "existing output file found (${OUTPUT_FILE}), trying again in a second"
+  sleep 1
+  RUN_INDICATOR=`date +"%s"`
+  OUTPUT_FILE=${OUTPUT_DIR}/${RUN_INDICATOR}
+done
+
+LAST_RUN_PATH=`readlink ${LAST_RUN_LINK}`
+
+debug "Run ID: ${RUN_INDICATOR}"
+debug "Output Root: ${OUTPUT_ROOT}"
+debug "Output Dir: ${OUTPUT_DIR}"
+debug "Output File: ${OUTPUT_FILE}"
+debug "Last Run Link: ${LAST_RUN_LINK}"
+debug "Last Run Path: ${LAST_RUN_PATH}"
+
+
+mkdir -p ${OUTPUT_DIR}
+${RUN_THIS} 2>&1 | tee ${OUTPUT_FILE}
+# if the output of this run is the same as the last, we'll remove the last only 
+# keeping the most recent version of similar output
+[ "`hash_file ${OUTPUT_FILE}`" == "`hash_file ${LAST_RUN_PATH}`" ] && rm ${LAST_RUN_LINK} 
+ln -f -s ${OUTPUT_FILE} ${LAST_RUN_LINK}
+

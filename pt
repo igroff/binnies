@@ -1,0 +1,136 @@
+#! /usr/bin/env python
+
+import argparse
+from datetime import datetime
+import os
+import os.path
+import sys
+
+action_description="""
+Summary of actions:
+list
+    list all active tasks
+list complete
+    list all completed tasks
+add
+    add a task to the list of active tasks, the rest of the command
+    line will be the text of the task
+delete <id>
+    remove a task given its id number
+complete <id>
+    complete a task given its id number
+"""
+
+ARG_PARSER = argparse.ArgumentParser(description='a simple todo list manager',
+    epilog=action_description,
+    formatter_class=argparse.RawDescriptionHelpFormatter)
+ARG_PARSER.add_argument('action', default="list", help="the action to perform")
+ARG_PARSER.add_argument('param', default=None, nargs="*",
+    help="the parameter pertinent to the chosen action")
+
+args = ARG_PARSER.parse_args()
+
+FILE_NAME = ".todo"
+COMPLETE_FILE = ".todo_complete"
+DATE_FORMAT = "%x %X %z"
+
+class TodoList:
+
+    def __init__(self, root_dir=None):
+        global FILE_NAME, COMPLETE_FILE
+        self.root_dir = root_dir
+        if not self.root_dir:
+            self.root_dir = os.getcwd()
+        self.file_path = os.path.join(self.root_dir, FILE_NAME)
+        self.complete_path = os.path.join(self.root_dir, COMPLETE_FILE)
+        if os.path.exists(self.file_path):
+            with open(self.file_path, 'r') as todo_file:
+                self.item_lines = todo_file.readlines()
+        else:
+            self.item_lines = []
+        self.refresh()
+
+    def refresh(self):
+        self._complete = self.read_lines(self.complete_path)    
+        self._active = self.read_lines(self.file_path)
+
+    def read_lines(self, file_path):
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as todo_file:
+                return todo_file.readlines()
+        return []
+
+    def __print_list(self, this_list):
+        id = 0
+        for i in this_list:
+            id = id + 1
+            sys.stdout.write("%s %s" % (id, i))
+
+    def print_active(self):
+        self.__print_list(self._active)
+
+    def print_complete(self):
+        self.__print_list(self._complete)
+
+    def complete(self, id):
+        # if the id isn't in the list, then there's nothing to do
+        if not len(self._active) >= id:
+            sys.stderr.write("id not found\n")
+            return
+        # expect user provided id to be 1 based
+        id = id - 1
+        # write out our completed item first
+        with open(self.complete_path, 'a') as cf:
+            ds = datetime.strftime(datetime.now(), DATE_FORMAT)
+            cf.write("x %s %s\n" % (ds, self._active[id].strip()))
+    
+        del(self._active[id])
+
+        # rewrite our active items
+        with open(self.file_path, 'w') as af:
+            for i in self._active:
+                af.write("%s\n" % i.strip())
+
+    def add(self, text):
+        """ add a new todo item """
+        with open(self.file_path, 'a') as f:
+            f.write("%s\n" % (text.strip()))
+
+    def delete(self, id):
+        """ delete an active todo item """
+        # if the id isn't in the list, then there's nothing to do
+        if not len(self._active) >= id:
+            sys.stderr.write("id not found\n")
+            return
+        # expect user provided id to be 1 based
+        id = id - 1
+
+        del(self._active[id])
+
+        # rewrite our active items
+        with open(self.file_path, 'w') as af:
+            for i in self._active:
+                af.write("%s\n" % i.strip())
+
+
+            
+
+tlist = TodoList()
+param = " ".join(args.param)
+
+if args.action == 'list':
+    if param == 'complete':
+        tlist.print_complete()
+    else:
+        tlist.print_active()
+elif args.action == 'complete':
+    tlist.complete(int(param))
+    tlist.print_active()
+elif args.action == 'delete':
+    tlist.delete(int(param))
+    tlist.print_active()
+else:
+    # it's nothing we recognize just add it as a task
+    tlist.add("%s %s" % (args.action, param))
+    tlist.refresh()
+    tlist.print_active()

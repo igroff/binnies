@@ -1,0 +1,10 @@
+#! /usr/bin/env python
+import json
+import sys
+import argparse
+
+ARG_PARSER = argparse.ArgumentParser()
+ARG_PARSER.add_argument('-j', '--json', type=open, default=sys.stdin,  dest='json', help='a file containing the json to pretty print, defaults to stdin')
+args = ARG_PARSER.parse_args()
+
+print(json.dumps(json.load(args.json), indent=2))

@@ -1,0 +1,51 @@
+#! /usr/bin/env bash
+# vi: ft=sh
+
+###############################################################################
+### Usage:
+###   runtracker <file> [output dir]
+###     executes a file (or command) and stores the output for later review
+###     any output generated is also echoed to the console
+###
+###     file - the file to be executed
+###
+###   runtracker show
+###     shows the contents of the output dir
+###     
+###   runtracker show <command>
+###     shows the contents of the output directory for the specific command
+###
+###   runtracker show last <command>
+###     shows the output from the last execution of the specified command
+###
+###
+### 
+### runtracker executes a command and stores the output in a file for later
+### review. It also echoes any output to the console.
+### 
+### Environment
+###   OUTPUT_DIR - the directory to which output will be saved, if not set
+###     PWD is used
+###############################################################################
+
+which openssl > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "missing openssl"
+  exit -2
+fi
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+[ $# -eq 0 ] && show_help ${BASH_SOURCE[0]} && exit 1
+
+# we'll use this to identify this run (name the file containing the output)
+RUN_INDICATOR=`date +"%s"`
+OUTPUT_ROOT=${OUTPUT_ROOT:-`pwd`/.runtracker}
+mkdir -p ${OUTPUT_ROOT}
+
+LAST_RUN_LINK_NAME=last_run
+
+export LAST_RUN_LINK_NAME OUTPUT_ROOT RUN_INDICATOR
+
+process_command ${BASH_SOURCE[0]} "$@"

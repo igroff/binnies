@@ -1,0 +1,51 @@
+# vim: set ft=shell
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+################################################################################
+# Configuration Variables (expected to be overridden from outside
+################################################################################
+# the dir that this script and the shell commands runtime live in
+SC_COMMANDS_DIR="${SC_COMMANDS_DIR-${MY_DIR}/commands}"
+# the path to the socket that will be used for communications
+# changing this creates a unique instance of the shell commands 
+# environment
+SC_SOCKET_PATH="${SC_SOCKET_PATH-${TMPDIR}sc_service.sock}"
+
+SC_LOG_DIR="${SC_LOG_DIR-${TMPDIR}shell_command/logs}"
+SC_DEBUG="${SC_DEBUG}"
+################################################################################
+# / Configuration Variables (expected to be overridden from outside
+################################################################################
+
+function log () { echo "$@" >&2; }
+function debug () {
+  if [ -n "${SC_DEBUG}" ]; then
+    echo "DEBUG $@" >&2;
+  fi
+}
+function error () { echo "ERROR $@" >&2; }
+
+
+INVOKED_FROM=`pwd`
+# this is the directory to which all of our logs will be written
+# each command will conveniently get it's own log as will the 
+# command processor and server
+LOG_DIR="${SC_LOG_DIR}"
+
+ENV_DIR="${MY_DIR}"
+ROOT_DIR="${MY_DIR}"
+
+# here is where we will be looking to resolve our commands a command either
+# exists under this directory or it's not available
+COMMANDS_DIR="${SC_COMMANDS_DIR}"
+
+
+MESSAGE_SOCKET="${SC_SOCKET_PATH}"
+
+if [ -n "${SC_DEBUG}" ]; then
+  set | grep SC_
+  echo "${MESSAGE_SOCKET}"
+fi
+
+# flag to keep it from happening more than once
+ENVIRONMENT_SOURCED=1

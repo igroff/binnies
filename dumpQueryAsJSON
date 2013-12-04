@@ -1,0 +1,71 @@
+#! /usr/bin/env python
+import sys
+import json
+import pymssql
+import argparse
+import logging
+import datetime
+from decimal import Decimal
+
+ARG_PARSER = argparse.ArgumentParser()
+ARG_PARSER.add_argument('-q', '--query', type=open,  dest='query', help='a file containing the query to execute')
+ARG_PARSER.add_argument('-o', '--output_query', default=False, dest='output_query', help='if set the query will be prepended to the output')
+ARG_PARSER.add_argument('-H', '--host',  dest='host', help='the database host to use')
+ARG_PARSER.add_argument('-u', '--user', dest='user', help='user to connect as')
+ARG_PARSER.add_argument('-p', '--password', dest='password', help='password for database user')
+
+
+def try_run(this_func):
+    try:
+        return this_func()
+    except Exception as e:
+        sys.stderr.write("Error executing %s\n%s" % (this_func.__code__.co_name, logging.traceback.format_exc()))
+        raise
+
+def exec_reporting_query(query=None, db_host=None, db_user=None, db_pass=None, **kwargs):
+    connection = pymssql.connect(host=db_host, user=db_user, password=db_pass, charset="UTF-8", as_dict=True)
+    cursor = connection.cursor()
+    cursor.execute(query)
+    row = cursor.fetchone()
+    while row:
+        rnd = {}
+        for k,v in row.items():
+            # really don't want anything with ordinal keys, we
+            # want readable names, so we'll skip anything number-y
+            try:
+                int(k)
+            except:
+                rnd[k] = v
+        yield rnd
+        row = cursor.fetchone()
+
+DATETIME_FORMAT_DECODE = 'datetime(%Y-%m-%d %H:%M:%S %Z)'
+DATETIME_FORMAT_ENCODE = '%Y-%m-%d %H:%M:%S UTC'
+def json_encode(obj):
+    if isinstance(obj, datetime.datetime):
+        #convert datetimes to strftime strings
+        return obj.strftime(DATETIME_FORMAT_ENCODE)
+    elif isinstance(obj, set):
+        return [s for s in obj]
+    elif isinstance(obj, Decimal):
+        return int(obj)
+    else:
+        return json.dumps(obj)
+class MyDecoder(json.JSONEncoder):
+    def default(self, obj):
+        return json_encode(obj)
+
+def format_output(**kwargs):
+    if kwargs['output_query']:
+        print("*" * 80)
+        print("Query: ")
+        print(kwargs['query'])
+        print("*" * 80)
+    for row in exec_reporting_query(**kwargs):
+        json_string = try_run(lambda: json.dumps(row, cls=MyDecoder))
+        if json_string:
+            print(json_string)
+
+if __name__ == "__main__":
+    args = ARG_PARSER.parse_args()
+    format_output(query=args.query.read(), db_host=args.host, db_user=args.user, db_pass=args.password, output_query=args.output_query)

@@ -1,0 +1,22 @@
+#! /usr/bin/env python
+import json
+import codecs
+import sys
+import csv
+import argparse
+import logging
+
+
+ARG_PARSER = argparse.ArgumentParser(description="given a csv convert each row to it's json rep")
+ARG_PARSER.add_argument('-f', '--file', type=open, default=sys.stdin,  dest='file', help='the csv file from which data will be read for conversion')
+ARG_PARSER.add_argument('-d', '--dialect', type=str, default="excel_tab",  dest='dialect', help='the csv file from which data will be read for conversion')
+
+args = ARG_PARSER.parse_args()
+csv.register_dialect('pipe', delimiter='|', quoting=csv.QUOTE_NONE)
+reader = csv.DictReader(codecs.StreamReader(args.file), dialect=csv.get_dialect(args.dialect))
+for line in reader: 
+    try:
+        print(json.dumps(line))
+    except Exception, e:
+        sys.stderr.write("error parsing\nline: %s\nerror:\n%s" % (line, e))
+sys.stdout.flush()

@@ -1,0 +1,36 @@
+#! /usr/bin/env python
+import json
+import sys
+import csv
+import argparse
+import logging
+
+ARG_PARSER = argparse.ArgumentParser(description="given an input stream of json objects, one per line, trans form them into tsv format")
+ARG_PARSER.add_argument('-j', '--json', type=open, default=sys.stdin,  dest='json', help='a file contining json blobs ( one per line ) for each blob, select the requested property values and produce a corresponding (to the selected values) json output')
+
+
+args = ARG_PARSER.parse_args()
+writer = None
+for line in args.json:
+    try:
+        d = json.loads(line)
+    except Exception as se:
+        sys.stderr.write("%s\n%s\nline: %s" % \
+            ("failed to loading json data",\
+            logging.traceback.format_exc(), line))
+        raise
+    try:
+        if not writer:
+            writer = csv.DictWriter(sys.stdout, d.keys())
+            # in order to be backwards compatible 
+            # some versions of csv don't have writeheader
+            sys.stdout.write("%s\n" % (",".join(d.keys())))
+        writer.writerow(d)
+    except UnicodeEncodeError as ue:
+        for key, value in d.items():
+            if isinstance(value, str) or isinstance(value, unicode):
+                d[key] = value.encode('ascii', 'replace')
+        writer.writerow(d)
+    except Exception as we:
+        sys.stderr.write("error writing row as csv\n%s\n%s" % (logging.traceback.format_exc(), line))
+sys.stdout.flush()

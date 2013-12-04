@@ -1,0 +1,112 @@
+# vim: ft=sh
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+silent_pushd(){ pushd $1 > /dev/null 2>&1; }
+export -f silent_pushd
+
+silent_popd(){ popd $1 > /dev/null 2>&1 ; }
+export -f silent_popd
+
+write_log(){ 
+  LEVEL=${1}
+  shift
+  if [ -n "${LEVEL}" ]; then
+    echo "`date +"%x %X"` [${LEVEL}] $@";
+  else
+    echo "`date +"%x %X"` $@";
+  fi
+}
+export -f write_log
+
+hash_file(){
+  THIS_FILE=$1
+  openssl md5 ${THIS_FILE} | sed -e 's[MD5.* [[g'
+}
+export -f hash_file
+
+log_divider() { write_log "******************************************"; }
+export -f log_divider
+
+error() { write_log "ERROR" $@; }
+export -f error
+
+warn()  { write_log "WARN" $@; }
+export -f warn
+
+info()  { write_log "INFO" $@; }
+export -f info
+
+debug() { [ -n "${DEBUG}" ] && write_log "DEBUG" $@; }
+export -f debug
+
+show_help(){
+  FROM_THIS_FILE=$1
+  debug "Showing help from ${FROM_THIS_FILE}"
+  grep '^###.*' ${FROM_THIS_FILE} | sed -e s[#*[[g
+}
+export -f show_help
+
+process_command(){
+  local FOR_THIS_FILE=$1
+  # our default command will be based on the script we're operating on
+  local COMMAND_PATH=${FOR_THIS_FILE}
+  local COMMAND_DIR=`dirname ${FOR_THIS_FILE}`
+  local BASE_SCRIPT_NAME=`basename ${FOR_THIS_FILE}`
+  shift # away our root script name
+  # keep track of our root command 'name' 
+  local COMMAND_NAME=${1,,}
+
+  # help is stored in comand name, and no longer needed
+  [ "${COMMAND_NAME}" == "help" ] && shift
+
+  for part in $@
+  do
+    # if we don't already have a path to test, we'll use the original
+    local TEST_COMMAND=${TEST_COMMAND:-${COMMAND_PATH}}_${part}
+    # if we find an executable at the path, that's our new command
+    if [ -x "${TEST_COMMAND}" ]; then
+      shift
+      COMMAND_PATH=${TEST_COMMAND}
+    else
+      # first time we run out of parts that make an executable we stop
+      break
+    fi
+  done
+  debug "found command at: ${COMMAND_PATH}"
+  # if we have not found a different command path than what we started with we're
+  # going to use the default
+  [ "${COMMAND_PATH}" == "${FOR_THIS_FILE}" ] && COMMAND_PATH=${COMMAND_PATH}_default
+  # we found a command, are they asking for help?
+  if [ "${COMMAND_NAME}" == "help" ]; then
+    # if we've asked for help on the default command
+    if [ "${COMMAND_PATH}" == "${FOR_THIS_FILE}_default" ]; then
+      # and we have a help specific command
+      if [ -x "${FOR_THIS_FILE}_help" ]; then
+         ${FOR_THIS_FILE}_help "$@"
+      fi
+    else
+      show_help "${COMMAND_PATH}"
+    fi
+    exit -1
+  fi
+  debug "running command ${COMMAND_PATH}"
+  # if not help, we execute
+  ${COMMAND_PATH} "$@"
+  exit $?
+}
+export -f process_command
+
+bail_on_error(){
+  ERROR_CODE=$?
+  MESSAGE=$1
+  if [ 0 -ne ${ERROR_CODE} ]; then
+    if [ -n "${MESSAGE}" ]; then
+      echo "Error (${ERROR_CODE}): ${MESSAGE}"
+    fi
+    exit ${ERROR_CODE}
+  fi
+}
+export -f bail_on_error
+
+export UTILS_IMPORTED=1
+debug "utils imported"
