@@ -1,1 +1,6 @@
 #! /usr/bin/env bash
+
+git clone https://github.com/intimonkey/binnies.git ~/binnies
+if [ -f "~/.bashrc" ]; then
+  echo "PATH=~/binnies:${PATH}" >> ~/.bashrc
+fi
