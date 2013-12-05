@@ -50,6 +50,6 @@ mkdir -p ${OUTPUT_DIR}
 ${RUN_THIS} 2>&1 | tee ${OUTPUT_FILE}
 # if the output of this run is the same as the last, we'll remove the last only 
 # keeping the most recent version of similar output
-[ "`hash_file ${OUTPUT_FILE}`" == "`hash_file ${LAST_RUN_PATH}`" ] && rm ${LAST_RUN_LINK} 
+[ -e "${LAST_RUN_PATH}" ] && [ "`hash_file ${OUTPUT_FILE}`" == "`hash_file ${LAST_RUN_PATH}`" ] && rm ${LAST_RUN_PATH} 
 ln -f -s ${OUTPUT_FILE} ${LAST_RUN_LINK}
 
