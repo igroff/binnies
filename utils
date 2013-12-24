@@ -39,6 +39,9 @@ export -f info
 debug() { [ -n "${DEBUG}" ] && write_log "DEBUG" $@; }
 export -f debug
 
+die() { echo $1 ; exit ${2-10000} ;}
+export -f die
+
 show_help(){
   FROM_THIS_FILE=$1
   debug "Showing help from ${FROM_THIS_FILE}"
@@ -59,12 +62,16 @@ process_command(){
   # help is stored in comand name, and no longer needed
   [ "${COMMAND_NAME}" == "help" ] && shift
 
+  debug "Looking for command: ${COMMAND_NAME}"
+
   for part in $@
   do
     # if we don't already have a path to test, we'll use the original
-    local TEST_COMMAND=${TEST_COMMAND:-${COMMAND_PATH}}_${part}
+    TEST_COMMAND=${TEST_COMMAND:-${BASE_SCRIPT_NAME}}_${part}
+    debug "checking for command file: ${TEST_COMMAND}"
     # if we find an executable at the path, that's our new command
-    if [ -x "${TEST_COMMAND}" ]; then
+    if [ -x "${COMMAND_DIR}/${TEST_COMMAND}" ]; then
+      debug "found command file at: ${TEST_COMMAND}"
       shift
       COMMAND_PATH=${TEST_COMMAND}
     else
@@ -107,6 +114,23 @@ bail_on_error(){
   fi
 }
 export -f bail_on_error
+
+source_rc_file(){
+  local APP_NAME=$1
+  until [ `pwd` == "/" ]
+  do
+    [ -f ".${APP_NAME}" ] && local RC_FILE=`pwd`/.${APP_NAME} && break
+    cd .. > /dev/null 2>&1
+  done
+  [ -f "${RC_FILE}" ] && source ${RC_FILE} && return 0
+
+  local RC_FILE=~/.${APP_NAME}
+  [ -f "${RC_FILE}" ] && source ${RC_FILE} && return 0
+  local RC_FILE=~/.${APP_NAME}/config
+  [ -f "${RC_FILE}" ] && source ${RC_FILE} && return 0
+  return 100
+}
+export -f source_rc_file
 
 export UTILS_IMPORTED=1
 debug "utils imported"
