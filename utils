@@ -132,5 +132,8 @@ source_rc_file(){
 }
 export -f source_rc_file
 
+# find a tmpdir
+[ -z "${TMPDIR}" ] && [ -d "/tmp" ] && export TMPDIR=/tmp
+
 export UTILS_IMPORTED=1
 debug "utils imported"
