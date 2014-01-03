@@ -1,0 +1,44 @@
+#! /usr/bin/env bash
+# vim: ft=sh
+
+###############################################################################
+### Usage:
+###   runtracker_retcode id command
+###
+###     id - the identifier used to locate and store output (logs)
+###     command - the command to execute
+###
+### Runs the provided command, only returning any output in the case that there
+### is an non zero return code from the command execution.
+###############################################################################
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+COMMAND_ID=$1
+shift
+COMMAND=$@
+debug "COMMAND: ${COMMAND}"
+
+TEMP_LOG=$(mktemp ${TMPDIR}rtrc.XXXXXXXX).log
+# just to make sure we clean up after ourselves
+trap "[ -e "${TEMP_LOG}" ] && rm ${TEMP_LOG}" EXIT
+debug "Temporary logfile: ${TEMP_LOG}"
+
+OUTPUT_DIR=${OUTPUT_ROOT}/${COMMAND_ID}
+
+debug cwd: $PWD
+$( exec 9>${TEMP_LOG}; exec 1>&9 ; exec 2>&9 ; eval "$COMMAND"  )
+COMMAND_RETCODE=$?
+debug command output:
+debug $(cat ${TEMP_LOG})
+if [ $COMMAND_RETCODE -ne 0 ]; then
+  debug 'non zero return code, logging'
+  if [ -r "${TEMP_LOG}" ]; then
+    mkdir -p ${OUTPUT_DIR} # JIC
+    mv "${TEMP_LOG}" "${OUTPUT_DIR}/${RUN_INDICATOR}"
+  else
+    error strange, the temporary log file ${TEMP_LOG} is gone
+  fi
+fi  
+
