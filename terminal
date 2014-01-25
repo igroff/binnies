@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+# vi: ft=sh
+
+###
+### terminal helper
+###
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+[ $# -eq 0 ] && show_help ${BASH_SOURCE[0]} && exit 1
+
+# we'll use this to identify this run (name the file containing the output)
+
+process_command ${BASH_SOURCE[0]} "$@"
