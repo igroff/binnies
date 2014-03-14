@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+# vi: ft=sh
+
+###
+### terminal tab splitter
+###
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+echo $OSTYPE | grep -i darwin > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  osascript ${MY_DIR}/terminal_helpers/iterm_split_pane_vertical.scpt >> /dev/null
+else
+  echo "I don't work on your os"
+fi

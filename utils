@@ -92,10 +92,16 @@ process_command(){
     # if we find an executable at the path, that's our new command
     if [ -x "${TEST_COMMAND}" ]; then
       debug "found executable command: ${TEST_COMMAND}"
-      shift
       COMMAND_PATH=${TEST_COMMAND}
     fi
   done
+  COMMAND_NAME=`basename ${COMMAND_PATH}`
+  # find the numer of underscores in the command name, we'll remove this
+  # many arguments to get to the actual command arguments
+  # this will include the EOL character, so we'll reduce our count by one
+  COMMAND_PART_COUNT=$(echo ${COMMAND_NAME} | sed -e 's/[^_]//g' | wc -m)
+  COMMAND_PART_COUNT=$(echo "${COMMAND_PART_COUNT} - 1" | bc)
+  shift ${COMMAND_PART_COUNT}
   debug "found command at: ${COMMAND_PATH}"
   # if we have not found a different command path than what we started with we're
   # going to use the default
