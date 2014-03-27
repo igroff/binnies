@@ -1,0 +1,111 @@
+#! /usr/bin/env bash
+
+################################################################################
+# description
+#  This script is intended to create crontab entries that will invoke an
+#  executable file in place according to the schedule found in an included
+#  shat indicator. 
+#  That is when executed and passed the name of a file that contains a line
+#  starting with '#@ ' the script will interpret the remainder of that line
+#  as a cron schedule and make an entry in the executing users crontab to
+#  invoke the containing script.
+#
+#  For Example:
+#  shat_scheduler /usr/bin/shat_scheduler
+#  would create a crontab entry that looks something like this:
+#  * * * * 1 "/usr/bin/shat_scheduler" 2>&1 | logger -t "shatcron-shat_scheduler
+# 
+#  Note that the above example picks the last valid #@ entry it finds in
+#  the file.  So if you look further in THIS file, you'll see it's picked 
+#  the last #@ entry.
+#
+# commands
+#  These commands only apply if the parameter indicating the file to process
+#  references a file containing a shat indicator (#@)
+#
+#  add
+#       if a shat is found in the file being processed add an entry
+#       to the crontab for the current user
+#
+#  show (default) 
+#       prints the crontab entry for the provided file to stdout
+################################################################################
+
+# sample cron schedules for testing
+#@ 0 * * * *
+#@ 0 * * * * 
+#@ 0 1 * * * 
+#@ 0 * 3/15 * * 
+#@ 0 * 3/15 * *         
+#@ 0 * */10 * * 
+#@ 1 1 1 1 1
+#@ * * * * 1
+
+function log(){
+  if [ -n "${SHAT_DEBUG}" ]; then
+    echo "${1}" >&2;
+  fi
+}
+
+
+function generate_for_file(){
+  LOG_DIR="~"
+  SCRIPT_FILE=`basename ${1}`
+  SCRIPT_DIR=`dirname ${1}`
+  SCRIPT_DIR=`cd ${SCRIPT_DIR}; pwd`
+  SCRIPT_PATH="${SCRIPT_DIR}/${SCRIPT_FILE}"
+
+  if [ ! -f "${SCRIPT_PATH}" ]; then
+    log "Couldn't find that file: ${1}" >&2
+    exit 1
+  fi
+
+  #  looking for shats, we only return the last one we find if
+  #  there are more than one stripping off our indicator to leave only
+  #  what is (hopefully) a valid cron expression
+  CRON_EXP=`grep -E '^#@ .*$' "${SCRIPT_PATH}" | tail -n 1 | sed -e 's[^#@ [[g'`
+
+  if [ -z "$CRON_EXP" ]; then
+    log "No shat (#@) entry for ${SCRIPT_PATH}"
+    exit 2
+  fi
+
+  #   <setup logger>
+  # if we can find logger we'll write anything that comes out to it
+  if [ -n `which logger` ]; then
+    LOGGER=" 2>&1 | logger -t \"shatcron-${SCRIPT_FILE}\""
+  else
+    LOGGER=" >> ~/${SCRIPT_FILE}.shatcron.log 2>&1"
+  fi
+  #   </setup logger>
+
+  INVOCATION="\"${SCRIPT_PATH}\"${LOGGER}"
+
+  echo "${CRON_EXP} ${INVOCATION}"
+}
+
+ACTION=show
+
+case "${1}" in
+  "show"|"add")
+    ACTION="${1}"
+    shift
+    ;;
+esac
+
+for file in $@
+do
+  CRON_ENTRIES=`generate_for_file "$file"`
+  if [ "${ACTION}" == "show" ]; then
+    if [ -n "${CRON_ENTRIES}" ]; then
+      echo "${CRON_ENTRIES}"
+    fi
+  elif [ "${ACTION}" == "add" ]; then
+    if [ -n "${CRON_ENTRIES}" ]; then
+      TMPCRON=${TMPDIR}/crontab.shat.tmp
+      crontab -l > ${TMPCRON}
+      echo "${CRON_ENTRIES}" >> ${TMPCRON}
+      crontab ${TMPCRON}
+    fi
+  fi
+done
