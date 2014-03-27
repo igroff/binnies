@@ -84,6 +84,18 @@ function generate_for_file(){
   echo "${CRON_EXP} ${INVOCATION}"
 }
 
+function find_shats(){
+  if [ -d "${1}" ]; then
+    find "$1" -executable -type f | while read fname
+    do
+      RESULT="$(generate_for_file $fname)"
+      [ -n "${RESULT}" ] && echo "$RESULT"
+    done
+  else
+    generate_for_file $1
+  fi
+}
+
 ACTION=show
 
 case "${1}" in
@@ -95,7 +107,7 @@ esac
 
 for file in $@
 do
-  CRON_ENTRIES=`generate_for_file "$file"`
+  CRON_ENTRIES=`find_shats "$file"`
   if [ "${ACTION}" == "show" ]; then
     if [ -n "${CRON_ENTRIES}" ]; then
       echo "${CRON_ENTRIES}"
