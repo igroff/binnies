@@ -80,9 +80,12 @@ process_command(){
   shift # away our root script name
   # keep track of our root command 'name' 
   local COMMAND_NAME=${1,,}
+  local WANT_HELP
 
   # help is stored in comand name, and no longer needed
-  [ "${COMMAND_NAME}" == "help" ] && shift
+  [ "${COMMAND_NAME}" == "help" ] && WANT_HELP="t" && shift
+
+  debug do they want help? ${WANT_HELP}
 
   for part in $@
   do
@@ -107,7 +110,8 @@ process_command(){
   # going to use the default
   [ "${COMMAND_PATH}" == "${FOR_THIS_FILE}" ] && COMMAND_PATH=${COMMAND_PATH}_default
   # we found a command, are they asking for help?
-  if [ "${COMMAND_NAME}" == "help" ]; then
+  if [ -n "${WANT_HELP}" ]; then
+    debug "someone has asked for help"
     # if we've asked for help on the default command
     if [ "${COMMAND_PATH}" == "${FOR_THIS_FILE}_default" ]; then
       # and we have a help specific command
