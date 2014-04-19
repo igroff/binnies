@@ -80,9 +80,12 @@ process_command(){
   shift # away our root script name
   # keep track of our root command 'name' 
   local COMMAND_NAME=${1,,}
+  local WANT_HELP
 
   # help is stored in comand name, and no longer needed
-  [ "${COMMAND_NAME}" == "help" ] && shift
+  [ "${COMMAND_NAME}" == "help" ] && WANT_HELP="t" && shift
+
+  debug do they want help? ${WANT_HELP}
 
   for part in $@
   do
@@ -107,7 +110,8 @@ process_command(){
   # going to use the default
   [ "${COMMAND_PATH}" == "${FOR_THIS_FILE}" ] && COMMAND_PATH=${COMMAND_PATH}_default
   # we found a command, are they asking for help?
-  if [ "${COMMAND_NAME}" == "help" ]; then
+  if [ -n "${WANT_HELP}" ]; then
+    debug "someone has asked for help"
     # if we've asked for help on the default command
     if [ "${COMMAND_PATH}" == "${FOR_THIS_FILE}_default" ]; then
       # and we have a help specific command
@@ -156,6 +160,58 @@ source_rc_file(){
   return 100
 }
 export -f source_rc_file
+
+function hash_with_shasum() {
+  if which shasum > /dev/null 2>&1 ; then
+    function hasher() {
+      shasum "${1}" | sed -e 's[  .*[[g'
+    }
+    return 0
+  fi
+  return 1
+}
+
+function hash_with_openssl() {
+  if which openssl > /dev/null 2>&1 ; then
+    function hasher() {
+      openssl sha "${1}" | sed -e 's[SHA\(.*\)= [[g'
+    }
+    return 0
+  fi
+  return 1
+}
+
+function hash_with_md5(){
+  if which md5sum > /dev/null 2>&1 ; then
+    function hasher() {
+      md5sum "${1}" | sed -e 's[  .*[[g'
+    }
+    return 0
+  fi
+  return 1
+}
+
+function find_a_hasher() {
+  case "${HASHER}" in
+    "md5")
+      hash_with_md5
+      ;;
+    "shasum")
+      hash_with_shasum
+      ;;
+    "openssl")
+      hash_with_openssl
+      ;;
+    *)
+      if hash_with_openssl || hash_with_shasum || hash_with_md5 ; then
+        return 0
+      else
+        return 1
+      fi
+      ;;
+  esac
+}
+export -f find_a_hasher
 
 export UTILS_IMPORTED=1
 debug "utils imported"
