@@ -1,0 +1,42 @@
+#! /usr/bin/env bash
+# vim: set ft=sh
+
+while test -n "$1"
+do
+  ARG=$1
+  ORIG_ARG=${ARG^^}
+  WITHOUT_DASHES=${ORIG_ARG#--}
+  KEY=${WITHOUT_DASHES}
+  VALUE=
+  # if the arg starts with -- well, it's an argument
+  # otherwise, who knows what it is so we'll skip it
+  if [ "${ORIG_ARG}" != "${WITHOUT_DASHES}" ]; then
+    # the arg is not the same as the arg without dashes, thus
+    # it has dashes
+
+    ARG_WITHOUT_EQUALS=${ARG/=/}
+    if [ "${ARG}" != "${ARG_WITHOUT_EQUALS}" ]; then
+      # we have an argument containing an equal sign
+      # the value follows the equal sign
+      ORIG_IFS=$IFS
+      IFS==
+      read -a ARG_ARRAY <<< "${ARG}"
+      VALUE="${ARG_ARRAY[1]}"
+      KEY="${ARG_ARRAY[0]#--}"
+      IFS=$ORIG_IFS
+    else
+      # otherwise the next argument is the value
+      shift
+      VALUE=$1
+    fi
+
+    eval "export ${KEY}=\"${VALUE}\""
+    env | grep ${KEY}
+  else
+    # well it didn't start with -- so it's not something we understand
+    :
+  fi
+  # on to the next one
+  shift 
+done
+
