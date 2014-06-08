@@ -30,8 +30,8 @@ do
       VALUE=$1
     fi
 
-    eval "export ${KEY}=\"${VALUE}\""
-    env | grep ${KEY}
+    KEY="${KEY/-/_}"
+    echo "export ${KEY^^}=\"${VALUE}\""
   else
     # well it didn't start with -- so it's not something we understand
     :
