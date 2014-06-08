@@ -8,6 +8,9 @@ do
   # normalizing the arg to uppercase
   ORIG_ARG=${ARG^^}
   WITHOUT_DASHES=${ORIG_ARG#--}
+  # ultimately we're going for finding a key and value so we can
+  # export key=value
+  # these are our defaults
   KEY=${WITHOUT_DASHES}
   VALUE=
   # if the arg starts with -- well, it's an argument
@@ -33,7 +36,8 @@ do
       VALUE=$1
     fi
 
-    # switch any dashes in our key to underscores
+    # switch any dashes in our key to underscores going for 'portable'
+    # environment variables
     KEY="${KEY/-/_}"
     # we're exporting our variable names in all upercase
     echo "export ${KEY^^}=\"${VALUE}\""
