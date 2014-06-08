@@ -20,6 +20,16 @@ on run(arguments)
     set useThisComment to system attribute "COMMENT"
     set useTheseTags to system attribute "TAGS"
     set useThisUrl to system attribute "URL"
+    set debugThisScript to system attribute "DEBUG"
+
+    if debugThisScript is not "" then
+      log "Comment: "
+      log useThisComment
+      log "Tags: "
+      log useTheseTags
+      log "URL: "
+      log useThisUrl
+    end if
 
     tell application id "DNtp"
       set newRecord to import POSIX file (addThisFile) as alias
@@ -28,7 +38,7 @@ on run(arguments)
       
       if useTheseTags is not "" then
         set originalDelimiters to AppleScript's text item delimiters
-        set AppleScript's text item delimiters to {" ", ","}
+        set AppleScript's text item delimiters to {","}
         set tags of newRecord to the text items of useTheseTags
         set AppleScript's text item delimiters to originalDelimiters
       end if

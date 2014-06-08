@@ -40,7 +40,7 @@ do
     # environment variables
     KEY="${KEY/-/_}"
     # we're exporting our variable names in all upercase
-    echo "export ${KEY^^}=\"${VALUE}\""
+    echo "export ${KEY^^}='${VALUE}'"
   else
     # well it didn't start with -- so it's not something we understand
     :
