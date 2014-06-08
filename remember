@@ -1,0 +1,12 @@
+#! /usr/bin/env bash 
+
+# make sure that we're only getting input from the command line
+export FILE=
+export COMMENT=
+export URL=
+export TAGS=
+
+eval $(args_to_env $@)
+
+${FILE?You need to provide a path to a file so we can add it to DTP}
+add_to_devon

@@ -3,23 +3,23 @@
 
 -- you can provide the following environment variables 
 --
--- DNTP_FILE
--- DNTP_COMMENT
--- DNTP_TAGS
--- DNTP_URL
+-- FILE
+-- COMMENT
+-- TAGS
+-- URL
 
 on run(arguments)
     -- pick the file out from our environment
-    set addThisFile to system attribute "DNTP_FILE"
+    set addThisFile to system attribute "FILE"
     -- if we have an argument, the first one will be the file to add
     -- and will overwrite the file indicated by the environment variable
     if length of arguments > 0 then
       set addThisFile to (first item of arguments) as string
     end if
 
-    set useThisComment to system attribute "DNTP_COMMENT"
-    set useTheseTags to system attribute "DNTP_TAGS"
-    set useThisUrl to system attribute "DNTP_URL"
+    set useThisComment to system attribute "COMMENT"
+    set useTheseTags to system attribute "TAGS"
+    set useThisUrl to system attribute "URL"
 
     tell application id "DNtp"
       set newRecord to import POSIX file (addThisFile) as alias
