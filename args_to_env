@@ -22,7 +22,8 @@ do
       # the value follows the equal sign
       ORIG_IFS=$IFS
       IFS==
-      read -a ARG_ARRAY <<< "${ORIG_ARG}"
+      # split up our orginal argument value
+      read -a ARG_ARRAY <<< "${ARG}"
       VALUE="${ARG_ARRAY[1]}"
       KEY="${ARG_ARRAY[0]#--}"
       IFS=$ORIG_IFS
@@ -32,8 +33,10 @@ do
       VALUE=$1
     fi
 
+    # switch any dashes in our key to underscores
     KEY="${KEY/-/_}"
-    echo "export ${KEY}=\"${VALUE}\""
+    # we're exporting our variable names in all upercase
+    echo "export ${KEY^^}=\"${VALUE}\""
   else
     # well it didn't start with -- so it's not something we understand
     :
