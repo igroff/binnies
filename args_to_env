@@ -1,6 +1,35 @@
 #! /usr/bin/env bash
 # vim: set ft=sh
 
+##############################################################################
+###
+### Ths script takes any old thing you pass on the command line as a long
+### parameter (--some-param-name=donkey) and outputs export statements derived
+### from those parameters.
+###
+### e.g.
+###
+### args_to_env --first-one pants --second-one="more, pants"
+### 
+### will output
+###  export FIRST_ONE="pants"
+###  export SECOND_ONE="more, pants"
+###
+### The idea is that there are tons and tons of ways go get arguments off
+### of a command line, docopt being the only thing that looks like a good
+### generalized solution, but you still have to implement all that shit
+### everytime you write a command line driven app.  But to use environment 
+### variables is always damn near the simplest thing you can do in any
+### programming langague, so this helps you get command line params into
+### environment variables.
+###
+##############################################################################
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+[ $# -eq 0 ] && show_help ${BASH_SOURCE[0]} && exit 1
+
 while test -n "$1"
 do
   # the argument as it was found on the command line
