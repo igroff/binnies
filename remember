@@ -1,5 +1,8 @@
 #! /usr/bin/env bash 
 
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
 # make sure that we're only getting input from the command line
 unset FILE
 unset COMMENT
@@ -9,4 +12,10 @@ unset TAGS
 eval "$(args_to_env "$@")"
 
 export FILE=${FILE?You need to provide a path to a file so we can add it to DTP}
-add_to_devon
+export URL="$(abspath $FILE)"
+ADD_OUTPUT="$(add_to_devon 2>&1)"
+ADD_RESULT=$?
+if [ $ADD_RESULT -ne 0 ]; then
+  echo $ADD_OUTPUT
+  exit $ADD_RESULT
+fi
