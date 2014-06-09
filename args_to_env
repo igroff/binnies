@@ -3,13 +3,16 @@
 
 ##############################################################################
 ###
+#### ${ME} Usage:
+####   ${ME} <long param>[=| ]<value>
+####
 ### Ths script takes any old thing you pass on the command line as a long
 ### parameter (--some-param-name=donkey) and outputs export statements derived
 ### from those parameters.
 ###
 ### e.g.
 ###
-### args_to_env --first-one pants --second-one="more, pants"
+### ${ME} --first-one pants --second-one="more, pants"
 ### 
 ### will output
 ###  export FIRST_ONE="pants"
@@ -23,12 +26,22 @@
 ### programming langague, so this helps you get command line params into
 ### environment variables.
 ###
+### ${ME} trys to be helpful so, while it currently ony supports arguments
+### that look like 'long' arguments i.e. starting with '--' it tries to be
+### flexible in allowing you to specify values, so all the following are
+### valid.
+###
+### ${ME} --first argument
+### ${ME} --first=argument
+###
+###
 ##############################################################################
 
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source ${MY_DIR}/utils
 
-[ $# -eq 0 ] && show_help ${BASH_SOURCE[0]} && exit 1
+[ $# -eq 0 ] && show_usage ${BASH_SOURCE[0]} && exit 1
+[ "$1" == "--help" -o "$1" == "-h" ] && show_help ${BASH_SOURCE[0]} && exit 1
 
 while test -n "$1"
 do

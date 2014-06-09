@@ -64,11 +64,20 @@ function abspath {
 export -f abspath
 
 show_help(){
-  FROM_THIS_FILE=$1
+  FROM_THIS_FILE=`basename $1`
   debug "Showing help from ${FROM_THIS_FILE}"
-  grep '^###.*' ${FROM_THIS_FILE} | sed -e s[#*[[g
+  grep '^###.*' ${FROM_THIS_FILE} | sed -e s[#*[[g \
+    | sed -e "s[\${ME}[$FROM_THIS_FILE[g"
 }
 export -f show_help
+
+show_usage(){
+  FROM_THIS_FILE=`basename $1`
+  debug "Showing help from ${FROM_THIS_FILE}"
+  grep '^####.*' ${FROM_THIS_FILE} | sed -e s[#*[[g \
+    | sed -e "s[\${ME}[$FROM_THIS_FILE[g"
+}
+export -f show_usage
 
 process_command(){
   local FOR_THIS_FILE=$1
