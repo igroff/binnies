@@ -33,14 +33,14 @@ do
     else
       # otherwise the next argument is the value
       shift
-      VALUE=$1
+      VALUE="$1"
     fi
 
     # switch any dashes in our key to underscores going for 'portable'
     # environment variables
     KEY="${KEY/-/_}"
     # we're exporting our variable names in all upercase
-    echo "export ${KEY^^}='${VALUE}'"
+    echo "export ${KEY^^}=\"${VALUE}\""
   else
     # well it didn't start with -- so it's not something we understand
     :

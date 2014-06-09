@@ -6,7 +6,7 @@ export COMMENT=
 export URL=
 export TAGS=
 
-eval $(args_to_env "$@")
+eval "$(args_to_env "$@")"
 
-${FILE?You need to provide a path to a file so we can add it to DTP}
+export FILE=${FILE?You need to provide a path to a file so we can add it to DTP}
 add_to_devon
