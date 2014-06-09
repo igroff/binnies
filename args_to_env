@@ -40,9 +40,6 @@
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source ${MY_DIR}/utils
 
-[ $# -eq 0 ] && show_usage ${BASH_SOURCE[0]} && exit 1
-[ "$1" == "--help" -o "$1" == "-h" ] && show_help ${BASH_SOURCE[0]} && exit 1
-
 while test -n "$1"
 do
   # the argument as it was found on the command line
