@@ -1,11 +1,12 @@
 #! /usr/bin/env bash
 
 TEMPLATE=$1
+OUTPUT_FILE=${2-${TEMPLATE}}
 
 # refuse to overwrite existing file
-[ -f "${TEMPLATE}" ] && echo "File ${TEMPLATE} already exists" && exit 3
+[ -f "${OUTPUT_FILE}" ] && echo "File ${TEMPLATE} already exists" && exit 3
 
-HTTP_STATUS=$(curl -s https://raw.githubusercontent.com/igroff/simple-templates/master/${TEMPLATE} -o ${TEMPLATE} -w "%{http_code}")
+HTTP_STATUS=$(curl -s https://raw.githubusercontent.com/igroff/simple-templates/master/${TEMPLATE} -o ${OUTPUT_FILE} -w "%{http_code}")
 
 if [ "${HTTP_STATUS}" == "404" ]; then
   echo "Unknown template \"${TEMPLATE}\""
