@@ -55,7 +55,7 @@ abs_path() {
 }
 export -f abs_path
 
-makeTempFile(){
+make_temp_file(){
   TEMPLATE=${1?You must provide a template name}
   if [ "${IS_MAC}" == "true" ]; then
     mktemp -t ${TEMPLATE}
@@ -63,7 +63,7 @@ makeTempFile(){
     mktemp --tmpdir ${TEMPLATE}
   fi
 }
-export -f makeTempFile
+export -f make_temp_file
 
 function abspath {
     if [[ -d "$1" ]]; then
