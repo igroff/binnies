@@ -1,6 +1,12 @@
 # vim: ft=sh
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+IS_MAC=false
+if [ "${OSTYPE/darwin/pants}" != "${OSTYPE}" ]; then
+  IS_MAC=true
+fi
+export IS_MAC
+
 silent_pushd(){ pushd $1 > /dev/null 2>&1; }
 export -f silent_pushd
 
@@ -10,10 +16,12 @@ export -f silent_popd
 write_log(){ 
   LEVEL=${1}
   shift
-  if [ -n "${LEVEL}" ]; then
-    echo "`date +"%x %X"` [${LEVEL}] $@";
+  if [ -n "${BARE_LOG}" ]; then
+    echo "$@" >&2;
+  elif [ -n "${LEVEL}" ]; then
+    echo "`date +"%x %X"` [${LEVEL}] $@" >&2;
   else
-    echo "`date +"%x %X"` $@";
+    echo "`date +"%x %X"` $@" >&2;
   fi
 }
 export -f write_log
@@ -46,6 +54,16 @@ abs_path() {
   (cd "${1%/*}" &>/dev/null && printf "%s/%s" "$(pwd)" "${1##*/}")
 }
 export -f abs_path
+
+makeTempFile(){
+  TEMPLATE=${1?You must provide a template name}
+  if [ "${IS_MAC}" == "true" ]; then
+    mktemp -t ${TEMPLATE}
+  else
+    mktemp --tmpdir ${TEMPLATE}
+  fi
+}
+export -f makeTempFile
 
 function abspath {
     if [[ -d "$1" ]]; then
@@ -223,4 +241,3 @@ function find_a_hasher() {
 export -f find_a_hasher
 
 export UTILS_IMPORTED=1
-debug "utils imported"
