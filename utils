@@ -35,16 +35,16 @@ export -f hash_file
 log_divider() { write_log "******************************************"; }
 export -f log_divider
 
-error() { write_log ${FUNCNAME^^} $@; }
+error() { write_log ${FUNCNAME^^} "$@"; }
 export -f error
 
-warn()  { write_log ${FUNCNAME^^} $@; }
+warn()  { write_log ${FUNCNAME^^} "$@"; }
 export -f warn
 
-info()  { write_log ${FUNCNAME^^} $@; }
+info()  { write_log ${FUNCNAME^^} "$@"; }
 export -f info
 
-debug() { [ -n "${DEBUG}" ] && write_log ${FUNCNAME^^} $@; }
+debug() { [ -n "${DEBUG}" ] && write_log ${FUNCNAME^^} "$@"; }
 export -f debug
 
 die() { echo $1 ; exit ${2-1} ;}
