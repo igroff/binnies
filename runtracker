@@ -9,6 +9,10 @@
 ###
 ###     file - the file to be executed
 ###
+###   runtracker retcode <id> <command>
+###     executes the given command logging the result iff the execution
+###     results in a non 0 exit code
+###
 ###   runtracker show
 ###     shows the contents of the output dir
 ###     

@@ -1,0 +1,62 @@
+#! /usr/bin/env bash
+# vim: set ft=sh
+
+##############################################################################
+### ${ME} <path to check>
+###
+###
+### Check a directory provided on the command line for files and matching
+### actions.  The directory provided will be checked to see if, for any 
+### files within, it also contains a like named executable dotfile.  If it 
+### does that file will be executed.
+###
+### e.g.
+### For a directory containing an executable file named '.triggerFile':
+### root_dir/
+###         .triggerFile
+###
+### If, when this file is executed with the full path to root_dir as the
+### first parameter on the command line, there is a file named 'triggerFile'
+### in root_dir then .triggerFile will be executed.
+###
+### When running an action, the current directory will be set to the
+### directory being checked for actions.  That is the script will change
+### into the provided directory before checking for and running any actions.
+###
+##############################################################################
+
+CHECK_THIS_FOLDER=${1?You must provide the full path to a folder for me to check}
+
+if [ "${CHECK_THIS_FOLDER}" == "help" ]; then
+  echo
+  egrep '^### ' ${0} | sed -e 's[^###[   [g' -e "s[\${ME}[${0}[g"
+  echo
+  exit 1
+fi
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+# subshell just so we don't end up somewhere weird
+(
+  pushd ${CHECK_THIS_FOLDER}
+  for file in ${CHECK_THIS_FOLDER}/*
+  do
+    ACTION_FILE_PATH=$(dirname ${file})/.$(basename ${file})
+    ACTION_FILE_NAME=$(basename ${ACTION_FILE_PATH})
+    info "found file, ${file} checking for action ${ACTION_FILE_PATH}"
+    if [ -x "${ACTION_FILE_PATH}" ]
+    then
+      info "running ${ACTION_FILE_PATH}"
+      info "<script output>"
+      ./${ACTION_FILE_NAME}
+      info "</script output>"
+      DID_SOMETHING=yup
+    else
+      info "No action for file ${file} found, doing nothing"
+    fi
+  done
+  [ -n "${DID_SOMETHING}" ] && exit 0
+  [ -z "${DID_SOMETHING}" ] && exit 1
+)
+exit

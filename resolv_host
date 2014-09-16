@@ -1,0 +1,13 @@
+#! /usr/bin/env bash
+
+HOST_TO_LOOKUP=${1?You need to tell me what host you would like to lookup}
+RESOLV_CONF=/etc/resolv.conf
+NAMESERVERS=$(egrep -v '^#.*$' ${RESOLV_CONF} | grep nameserver | sed -e 's/nameserver[[:space:]]//g')
+
+RESULTS=''
+for nameserver in ${NAMESERVERS}
+do
+  nslookup ${HOST_TO_LOOKUP} $nameserver
+done
+
+echo ${RESULTS}

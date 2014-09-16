@@ -1,0 +1,46 @@
+#! /usr/bin/env osascript
+# vim: set ft=applescript
+
+-- you can provide the following environment variables 
+--
+-- FILE
+-- COMMENT
+-- TAGS
+-- URL
+
+on run(arguments)
+    -- pick the file out from our environment
+    set addThisFile to system attribute "FILE"
+    -- if we have an argument, the first one will be the file to add
+    -- and will overwrite the file indicated by the environment variable
+    if length of arguments > 0 then
+      set addThisFile to (first item of arguments) as string
+    end if
+
+    set useThisComment to system attribute "COMMENT"
+    set useTheseTags to system attribute "TAGS"
+    set useThisUrl to system attribute "URL"
+    set debugThisScript to system attribute "DEBUG"
+
+    if debugThisScript is not "" then
+      log "Comment: "
+      log useThisComment
+      log "Tags: "
+      log useTheseTags
+      log "URL: "
+      log useThisUrl
+    end if
+
+    tell application id "DNtp"
+      set newRecord to import POSIX file (addThisFile) as alias
+      set comment of newRecord to useThisComment
+      set URL of newRecord to useThisUrl
+      
+      if useTheseTags is not "" then
+        set originalDelimiters to AppleScript's text item delimiters
+        set AppleScript's text item delimiters to {","}
+        set tags of newRecord to the text items of useTheseTags
+        set AppleScript's text item delimiters to originalDelimiters
+      end if
+    end
+end run

@@ -1,0 +1,90 @@
+#! /usr/bin/env bash
+# vim: set ft=sh
+
+##############################################################################
+###
+#### ${ME} Usage:
+####   ${ME} <long param>[=| ]<value>
+####
+### Ths script takes any old thing you pass on the command line as a long
+### parameter (--some-param-name=donkey) and outputs export statements derived
+### from those parameters.
+###
+### e.g.
+###
+### ${ME} --first-one pants --second-one="more, pants"
+### 
+### will output
+###  export FIRST_ONE="pants"
+###  export SECOND_ONE="more, pants"
+###
+### The idea is that there are tons and tons of ways go get arguments off
+### of a command line, docopt being the only thing that looks like a good
+### generalized solution, but you still have to implement all that shit
+### everytime you write a command line driven app.  But to use environment 
+### variables is always damn near the simplest thing you can do in any
+### programming langague, so this helps you get command line params into
+### environment variables.
+###
+### ${ME} trys to be helpful so, while it currently ony supports arguments
+### that look like 'long' arguments i.e. starting with '--' it tries to be
+### flexible in allowing you to specify values, so all the following are
+### valid.
+###
+### ${ME} --first argument
+### ${ME} --first=argument
+###
+###
+##############################################################################
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+while test -n "$1"
+do
+  # the argument as it was found on the command line
+  ARG=$1
+  # normalizing the arg to uppercase
+  ORIG_ARG=${ARG^^}
+  WITHOUT_DASHES=${ORIG_ARG#--}
+  # ultimately we're going for finding a key and value so we can
+  # export key=value
+  # these are our defaults
+  KEY=${WITHOUT_DASHES}
+  VALUE=
+  # if the arg starts with -- well, it's an argument
+  # otherwise, who knows what it is so we'll skip it
+  if [ "${ORIG_ARG}" != "${WITHOUT_DASHES}" ]; then
+    # the arg is not the same as the arg without dashes, thus
+    # it has dashes
+
+    ARG_WITHOUT_EQUALS=${ARG/=/}
+    if [ "${ARG}" != "${ARG_WITHOUT_EQUALS}" ]; then
+      # we have an argument containing an equal sign
+      # the value follows the equal sign
+      ORIG_IFS=$IFS
+      IFS==
+      # split up our orginal argument value
+      read -a ARG_ARRAY <<< "${ARG}"
+      VALUE="${ARG_ARRAY[1]}"
+      KEY="${ARG_ARRAY[0]#--}"
+      IFS=$ORIG_IFS
+    else
+      # otherwise the next argument is the value
+      shift
+      VALUE="$1"
+    fi
+
+    # switch any dashes in our key to underscores going for 'portable'
+    # environment variables
+    KEY="${KEY/-/_}"
+    # we're exporting our variable names in all upercase
+    echo "export ${KEY^^}=\"${VALUE}\""
+  else
+    # well it didn't start with -- so it's not something we understand
+    :
+  fi
+  # on to the next one
+  shift 
+done
+

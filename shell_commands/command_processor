@@ -10,8 +10,6 @@ function run_command(){
   COMMAND_PATH="${COMMANDS_DIR}/${COMMAND}"
   if [ ! -x "${COMMAND_PATH}" ]; then
     error "no command named ${COMMAND} available" 
-  else
-    eval "${COMMAND_PATH} ${arguments}; growlnotify --message \"${COMMAND} Done\"" &
   fi
 }
 

@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+# vi: ft=sh
+
+###
+### terminal default
+###
+### The default is to do nothing
+###
+
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
