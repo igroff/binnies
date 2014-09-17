@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{=it.path}}</title>
+</head>
+<body>
+  <ul>{{~it.contents :value:index}}
+  <li>{{=value.name}}</li>
+  {{~}}</ul>
+</body>
+</html>
+
+

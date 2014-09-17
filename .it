@@ -155,6 +155,7 @@ process.stdin.on('data', function(buf) { content += buf.toString(); });
 process.stdin.on('end', function() {
   var context = JSON.parse(content);  
   var template = fs.readFileSync(fileName);
+  dot.templateSettings.strip = false;
   var templateFunction = dot.template(template);
   console.log(templateFunction(context));
 });
