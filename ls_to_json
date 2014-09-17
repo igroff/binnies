@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+# vim:ft=sh
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+ls | awk -f ${MY_DIR}/list_to_array_of_names.awk
