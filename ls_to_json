@@ -4,6 +4,8 @@ MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo '{'
 echo "  "\""path"\"":"\""$(pwd)"\"","
+echo "  "\""basename"\"":"\""$(basename `pwd`)"\"","
+echo "  "\""dirname"\"":"\""$(dirname `pwd`)"\"","
 echo -n "  "\""contents"\"":"
 ls | awk -f ${MY_DIR}/awk/list_to_array_of_names.awk
 echo '}'

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>{{=it.path}}</title>
+  <title>Contents of {{=it.basename}}</title>
 </head>
 <body>
   <ul>{{~it.contents :value:index}}
-  <li>{{=value.name}}</li>
+  <li><a href="{{=value.name}}">{{=value.name}}</a></li>
   {{~}}</ul>
 </body>
 </html>
