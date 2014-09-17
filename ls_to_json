@@ -2,4 +2,4 @@
 # vim:ft=sh
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-ls | awk -f ${MY_DIR}/list_to_array_of_names.awk
+ls | awk -f ${MY_DIR}/awk/list_to_array_of_names.awk
