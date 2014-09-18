@@ -27,7 +27,7 @@ function sanitize_tag(){
   TAG="${TAG/ /_}"
 }
 function validate_tag(){
-  TAG="${1?You must provide a tag for me to sanitize}"
+  TAG="${1?You must provide a tag for me to validate}"
   TAG="${TAG//[A-Za-z0-9_\- ]/}"
   [ -z "${TAG}" ] || die "invalid tag ${TAG}, you can only use alphanumeric, space, -, and _" 1
 }
