@@ -1,6 +1,9 @@
 # vim: ft=sh
 MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# super brute-force determination if we're running on OS X
+# if replacing darwin in OSTYPE with pants changes the value
+# of OSTYPE, it's a mac
 IS_MAC=false
 if [ "${OSTYPE/darwin/pants}" != "${OSTYPE}" ]; then
   IS_MAC=true
@@ -239,5 +242,10 @@ function find_a_hasher() {
   esac
 }
 export -f find_a_hasher
+
+function hash_with_sha() {
+  openssl sha "${1}" | sed -e 's[SHA\(.*\)= [[g'
+}
+export -f hash_with_sha
 
 export UTILS_IMPORTED=1
