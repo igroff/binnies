@@ -97,13 +97,13 @@ function get_tags(){
   jq ".tags" "${KEY_FILE}"
 }
 
-# display tags
-#jq ".tags" ~/.tags/objs/fa68903b60e2f919013703df0e6fdeafd7b0da7c.json | sed -e 's/["|,]//g' | sed -E '/^\[|\]$/d'
-
+# if we have tags, then we validate them it looks 'funny' because 
+# TAGS is an array and an empty array is undefined we do this below
+# as well
 [ "${TAGS:-x}" != "x" ] && validate_tags "${TAGS[@]}"
 
-find_a_hasher 'openssl'
-KEY=$(hasher ${ABS_PATH_OF_FILE_TO_TAG})
+KEY=$(hash_with_sha ${ABS_PATH_OF_FILE_TO_TAG})
+# wonky test necessitated by array, see above for explanation
 if [ "${TAGS:-x}" == "x" ]; then
   STORED_TAGS=$(get_tags "${KEY}")
   if [ -z "${STORED_TAGS}" ]; then
