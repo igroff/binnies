@@ -1,0 +1,47 @@
+#! /usr/bin/env bash
+# vim:ft=sh
+MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source ${MY_DIR}/utils
+
+# this launcher can be called with or without a single parameter. the single
+# parameter --command specifies the command name we'll use to base our
+# further actions off of (loading *_base, etc)
+# 
+# if the first parameter is --command the net parameter will be the command
+# name
+
+if [ "$1" == "--command" ]; then
+  # remove --command
+  shift
+  COMMAND_NAME="${1}"
+  # remove the command name
+  shift
+fi
+
+
+echo "launcher sees $@"
+COMMAND_PATH=$1
+COMMAND_DIR=$(dirname ${COMMAND_PATH})
+COMMAND_NAME=${COMMAND_NAME:-$(basename ${COMMAND_PATH})}
+COMMAND_BASE=${COMMAND_DIR}/${COMMAND_NAME}_base
+
+debug "launcher Command Dir:  " ${COMMAND_DIR}
+debug "launcher Command Path: " ${COMMAND_PATH}
+debug "launcher Command Name: " ${COMMAND_NAME} 
+debug "launcher  \$0  " $0
+debug 'launcher pwd  ' $(pwd)
+
+# if there is a file that is a sibling of our command, named
+# <command>_base then we will source that
+[ -r "${COMMAND_BASE}" ] && source ${COMMAND_BASE}
+
+# any command specific rc files, we can load for them
+source_rc_file "${COMMAND_NAME}"
+
+# my scripts, historically, have referred to the directory they are in
+# as MY_DIR. since we're going to set up some environment for our launched
+# script, we'll be nice and reset MY_DIR for the script we're launching
+export MY_DIR="${COMMAND_PATH}"
+
+# execute our command!
+bash "$@"
