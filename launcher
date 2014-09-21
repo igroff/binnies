@@ -7,7 +7,7 @@ source ${MY_DIR}/utils
 # parameter --command specifies the command name we'll use to base our
 # further actions off of (loading *_base, etc)
 # 
-# if the first parameter is --command the net parameter will be the command
+# if the first parameter is --command the next parameter will be the command
 # name
 
 if [ "$1" == "--command" ]; then
