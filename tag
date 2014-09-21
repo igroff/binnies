@@ -27,4 +27,3 @@ if [ "${TAGS:-x}" == "x" ]; then
 else
   tag_this "${KEY}" "${TAGS[@]}"
 fi
-
