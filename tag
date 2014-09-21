@@ -7,14 +7,12 @@ ABS_PATH_OF_FILE_TO_TAG=$(abspath ${FILE_TO_TAG})
 shift
 TAGS=("$@")
 
-# if we have tags, then we validate them it looks 'funny' because 
-# TAGS is an array and an empty array is undefined we do this below
-# as well
 [ "${TAGS:-x}" != "x" ] && validate_tags "${TAGS[@]}"
 
 KEY=$(hash_with_sha ${ABS_PATH_OF_FILE_TO_TAG})
-# wonky test necessitated by array, see above for explanation
 if [ "${TAGS:-x}" == "x" ]; then
+  # we weren't provided any tags so we're going to show the ones we
+  # have, if there are any.
   STORED_TAGS=$(get_tags "${KEY}")
   if [ -z "${STORED_TAGS}" ]; then
     die "no tags for key ${KEY}" 0
