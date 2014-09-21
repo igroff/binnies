@@ -2,9 +2,6 @@
 # vim:ft=sh
 set -eu
 
-MY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source ${MY_DIR}/utils
-
 FILE_TO_TAG=${1?You need to provide me something to tag}
 ABS_PATH_OF_FILE_TO_TAG=$(abspath ${FILE_TO_TAG})
 shift
