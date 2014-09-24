@@ -39,7 +39,7 @@ source_rc_file "${COMMAND_NAME}"
 # my scripts, historically, have referred to the directory they are in
 # as MY_DIR. since we're going to set up some environment for our launched
 # script, we'll be nice and reset MY_DIR for the script we're launching
-export MY_DIR="${COMMAND_PATH}"
+export MY_DIR="${COMMAND_DIR}"
 
 # execute our command!
 bash "$@"
