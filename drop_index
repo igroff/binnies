@@ -1,0 +1,12 @@
+#! /usr/bin/env launcher
+DB_NAME=${1?You must provide the name of a database}
+TABLE_NAME=${2?You must provide a table name}
+INDEX_NAME=${3?You must provide an index name}
+COMMENTS=${4}
+
+if [ -n $COMMENTS ]; then
+  echo '/*'
+  echo $COMMENTS
+  echo '*/'
+echo '{"db_name":"'${DB_NAME}'","table_identifier":"'${TABLE_NAME}'","index_name":"'${INDEX_NAME}'"}' | render_template drop_index
+echo

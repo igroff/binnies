@@ -8,15 +8,33 @@ import logging
 
 
 ARG_PARSER = argparse.ArgumentParser(description="given a csv convert each row to it's json rep")
-ARG_PARSER.add_argument('-f', '--file', type=open, default=sys.stdin,  dest='file', help='the csv file from which data will be read for conversion')
-ARG_PARSER.add_argument('-d', '--dialect', type=str, default="excel_tab",  dest='dialect', help='the csv file from which data will be read for conversion')
+ARG_PARSER.add_argument('-f', '--file', type=str,  dest='file', help='the csv file from which data will be read for conversion')
+ARG_PARSER.add_argument('-d', '--dialect', type=str, default="excel-tab",  dest='dialect', help='the csv file from which data will be read for conversion')
+ARG_PARSER.add_argument('-a', '--as-array', action='store_true', dest='as_array', help='if true, the output is rendered as an array of json objects as opposed to one object per line')
+ARG_PARSER.add_argument('-l', action='store_true', dest='do_list', help='if provided causes a list of available dialects to be output')
 
 args = ARG_PARSER.parse_args()
+# helpful extra pipe-delimited format
 csv.register_dialect('pipe', delimiter='|', quoting=csv.QUOTE_NONE)
-reader = csv.DictReader(codecs.StreamReader(args.file), dialect=csv.get_dialect(args.dialect))
+
+
+if args.do_list:
+    print(csv.list_dialects())
+    sys.exit(0)
+
+reader = csv.DictReader(codecs.open(args.file, 'r'), dialect=csv.get_dialect(args.dialect))
+# if asked to we will collect the output items in an array and dump the whole thing
+# as an array
+output_array = None
+if args.as_array:
+  output_array = []
 for line in reader: 
     try:
-        print(json.dumps(line))
+        if args.as_array:
+            output_array.append(line)
+        else:
+            print(json.dumps(line))
     except Exception, e:
         sys.stderr.write("error parsing\nline: %s\nerror:\n%s" % (line, e))
-sys.stdout.flush()
+if args.as_array:
+    print(json.dumps(output_array))

@@ -11,6 +11,6 @@ files = [sys.stdin] if not args.files else args.files
 
 for file in files:
     for line in file:
-        split = line.split('\r')
-        for split_line in split:
-            print split_line
+        line = line.replace('\r\n', '\n')
+        line = line.replace('\r', '\n', 1000)
+        sys.stdout.write(line)

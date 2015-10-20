@@ -44,3 +44,6 @@ def render_template():
 
     for line in args.json:
         sys.stdout.write(template.render(json.loads(line)))
+
+if __name__ == "__main__":
+    render_template()

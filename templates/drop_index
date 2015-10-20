@@ -1,0 +1,6 @@
+use {{db_name}}
+go
+if exists (select 1 from sys.indexes where object_id=OBJECT_ID('{{table_identifier}}') and name = '{{index_name}}')
+begin
+  drop index {{index_name}} on {{table_identifier}}
+end

@@ -1,0 +1,27 @@
+#! /usr/bin/env launcher
+
+FROM_URL=$1
+TO_URL=$2
+KEEP_OUTPUT=$3
+
+FROM_TMP=$(make_temp_file urldiff_fr)
+TO_TMP=$(make_temp_file urldiff_to)
+
+if [ "${KEEP_OUTPUT}" = "KEEP" ]; then
+  trap "rm ${FROM_TMP}; rm ${TO_TMP}" EXIT
+fi
+printf "namelookup appconnect connect pretransfer startransfer size status total url\n"
+exec 3< <(curl -s --write-out "%{time_namelookup} %{time_appconnect} %{time_connect} %{time_pretransfer} %{time_starttransfer} %{size_download} %{http_code} %{time_total} ${FROM_URL}\n" --user "svcStarphleetLDAP:4ratURas" --output "${FROM_TMP}" ${FROM_URL} &)
+exec 4< <(curl -s --write-out "%{time_namelookup} %{time_appconnect} %{time_connect} %{time_pretransfer} %{time_starttransfer} %{size_download} %{http_code} %{time_total} ${TO_URL}\n" --user "svcStarphleetLDAP:4ratURas" --output "${TO_TMP}" "${TO_URL}" &)
+
+wait
+cat <&3
+cat <&4
+
+diff --report-identical --to-file "${TO_TMP}" "${FROM_TMP}"
+
+if [ "${KEEP_OUTPUT}" = "VIEW" ]; then
+  vim -o "${TO_TMP}" "${FROM_TMP}"
+fi
+
+

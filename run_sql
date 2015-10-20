@@ -1,0 +1,59 @@
+#! /usr/bin/env node
+// vim: ft=javascript
+
+var tds = require('tedious');
+var argv = require('minimist')(process.argv.slice(2));
+var _   = require('lodash');
+
+var server = argv._[0];
+var username = argv._[1];
+var password = argv._[2];
+
+var query = '';
+
+process.stdin.on('data', function(data){
+  query += data.toString();
+});
+
+
+process.stdin.on('end', function(){
+  var connection = new tds.Connection(
+    {userName:username, password: password, server: server}
+  );
+  connection.on('connect', function(err){
+    if (err){
+      console.log(err);
+      return;
+    } else {
+      req = new tds.Request(query, function(err, rowcount){
+        if (err){
+          console.log('request errror');
+          console.log(err);
+          process.exit(1);
+        }
+      });
+      connection.execSqlBatch(req);
+      var rows = [];
+      req.on('row', function(columns){
+        row = {};
+        _.each(columns, function(column) { 
+          row[column.metadata.colName] = column.value;
+        });
+        rows.push(row);
+      });
+      req.on('columnMetadata', function(){
+          rows = []
+      });
+      req.on('done', function(rowCount, more){ 
+        if (rows.length > 0){
+          console.log(JSON.stringify(rows));
+        }
+        console.log("//end resultset ( " + (rowCount || 0) +  " rows )");
+        if (!more){
+          process.exit(0);
+        }
+        console.log("");
+      });
+    }
+  });
+});

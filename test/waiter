@@ -1,0 +1,24 @@
+#! /usr/bin/env bash
+function sigterm_trapper(){
+  write "trapped SIGTERM"
+  unset RUN
+}
+function write(){
+  echo "[from waiter ($$)]: " "$@"
+}
+export -f write
+write "started waiting"
+trap sigterm_trapper SIGTERM
+trap "write QUIT" SIGQUIT
+trap "write INT; trap SIGINT; kill -SIGINT $$" SIGINT
+trap "write HUP" SIGHUP
+trap "write USR1" SIGUSR1
+trap "write USR2" SIGUSR2
+trap "write WINCH" SIGWINCH
+
+RUN=true
+while [ -n "${RUN}" ]
+do
+  sleep .5
+done
+write "done"
